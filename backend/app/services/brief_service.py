@@ -84,6 +84,27 @@ class BriefService:
             f"and guide readers seamlessly to relevant store products."
         )
 
+        # Enhance brief with LLM provider if configured and available
+        try:
+            from backend.app.config import settings
+            from backend.app.providers.implementations.provider_factory import get_llm_provider
+            if settings.AI_PROVIDER.lower() == "gemini":
+                llm = get_llm_provider()
+                if llm.is_available():
+                    evidence_dicts = [{"notes": e} for e in evidence_list]
+                    llm_brief = llm.generate_content_brief(opp, evidence_dicts)
+                    if llm_brief and llm_brief.get("suggested_sections"):
+                        title = llm_brief.get("title", title)
+                        objective = llm_brief.get("objective", objective)
+                        search_intent = llm_brief.get("search_intent", search_intent)
+                        target_audience = llm_brief.get("target_audience", target_audience)
+                        suggested_angle = llm_brief.get("suggested_angle", suggested_angle)
+                        sections = llm_brief.get("suggested_sections", sections)
+                        if llm_brief.get("related_keywords"):
+                            related_keywords = llm_brief.get("related_keywords")
+        except Exception as e:
+            logger.warning("LLM brief enhancement failed: %s — using rules", e)
+
         now = utc_now_iso()
         cursor = conn.execute(
             """

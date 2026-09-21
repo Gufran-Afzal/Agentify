@@ -8,6 +8,9 @@ export const ResearchPage: React.FC = () => {
   const [runs, setRuns] = useState<ResearchRun[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<number | null>(null);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
+  const [activeTab, setActiveTab] = useState<'opportunities' | 'actions' | 'evidence'>('opportunities');
+  const [actions, setActions] = useState<any[]>([]);
+  const [evidence, setEvidence] = useState<any[]>([]);
   const [loadingRuns, setLoadingRuns] = useState(false);
   const [executing, setExecuting] = useState(false);
   const [loadingOpps, setLoadingOpps] = useState(false);
@@ -30,13 +33,19 @@ export const ResearchPage: React.FC = () => {
     }
   };
 
-  const loadOpportunities = async (runId: number) => {
+  const loadRunDetails = async (runId: number) => {
     try {
       setLoadingOpps(true);
-      const opps = await api.getRunOpportunities(runId);
+      const [opps, acts, evs] = await Promise.all([
+        api.getRunOpportunities(runId).catch(() => []),
+        api.getRunActions(runId).catch(() => []),
+        api.getRunEvidence(runId).catch(() => []),
+      ]);
       setOpportunities(opps);
+      setActions(acts);
+      setEvidence(evs);
     } catch (err: any) {
-      setError(err.message || 'Failed to load opportunities for run');
+      setError(err.message || 'Failed to load run details');
     } finally {
       setLoadingOpps(false);
     }
@@ -48,7 +57,7 @@ export const ResearchPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedRunId !== null) {
-      loadOpportunities(selectedRunId);
+      loadRunDetails(selectedRunId);
     }
   }, [selectedRunId]);
 
@@ -79,7 +88,7 @@ export const ResearchPage: React.FC = () => {
     try {
       await api.approveOpportunity(oppId);
       setSuccess('Opportunity approved!');
-      if (selectedRunId) loadOpportunities(selectedRunId);
+      if (selectedRunId) loadRunDetails(selectedRunId);
     } catch (err: any) {
       setError(err.message || 'Failed to approve opportunity');
     }
@@ -89,7 +98,7 @@ export const ResearchPage: React.FC = () => {
     try {
       await api.rejectOpportunity(oppId);
       setSuccess('Opportunity rejected.');
-      if (selectedRunId) loadOpportunities(selectedRunId);
+      if (selectedRunId) loadRunDetails(selectedRunId);
     } catch (err: any) {
       setError(err.message || 'Failed to reject opportunity');
     }
@@ -169,21 +178,107 @@ export const ResearchPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Opportunities Generated for Selected Run */}
+        {/* Opportunities / Actions / Evidence for Selected Run */}
         <div>
-          <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '16px' }}>
+          <div className="card-header" style={{ border: 'none', padding: 0, marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div className="card-title" style={{ fontSize: '17px' }}>
-                {selectedRunId ? `Opportunities in Run #${selectedRunId}` : 'Select a Research Run'}
+                {selectedRunId ? `Run #${selectedRunId} Intelligence` : 'Select a Research Run'}
               </div>
               <div className="card-subtitle">
-                {opportunities.length} candidate topic(s) discovered with transparent scoring & evidence
+                Inspect agent decisions, gathered evidence, and generated opportunities
               </div>
             </div>
+
+            {selectedRunId && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className={`btn btn-sm ${activeTab === 'opportunities' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('opportunities')}
+                >
+                  Opportunities ({opportunities.length})
+                </button>
+                <button
+                  className={`btn btn-sm ${activeTab === 'actions' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('actions')}
+                >
+                  Action Log ({actions.length})
+                </button>
+                <button
+                  className={`btn btn-sm ${activeTab === 'evidence' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('evidence')}
+                >
+                  Evidence ({evidence.length})
+                </button>
+              </div>
+            )}
           </div>
 
           {loadingOpps ? (
-            <div className="card" style={{ textAlign: 'center', padding: '40px' }}>Loading opportunities...</div>
+            <div className="card" style={{ textAlign: 'center', padding: '40px' }}>Loading run intelligence...</div>
+          ) : activeTab === 'actions' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {actions.length === 0 ? (
+                <div className="card" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-dim)' }}>
+                  No actions recorded for this run.
+                </div>
+              ) : (
+                actions.map((act) => (
+                  <div key={act.id} className="card" style={{ margin: 0, padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 700, color: 'var(--primary)', fontFamily: 'monospace' }}>
+                          {act.action_type}
+                        </span>
+                        <StatusBadge status={act.status} />
+                      </div>
+                      <span style={{ fontSize: '11.5px', color: 'var(--text-dim)' }}>
+                        {act.created_at ? new Date(act.created_at).toLocaleTimeString() : ''}
+                      </span>
+                    </div>
+                    {act.result && Object.keys(act.result).length > 0 && (
+                      <div style={{ background: 'rgba(0,0,0,0.25)', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', fontFamily: 'monospace' }}>
+                        {JSON.stringify(act.result)}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          ) : activeTab === 'evidence' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {evidence.length === 0 ? (
+                <div className="card" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-dim)' }}>
+                  No evidence items recorded for this run.
+                </div>
+              ) : (
+                evidence.map((ev) => (
+                  <div key={ev.id} className="card" style={{ margin: 0, padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span className="badge badge-approved" style={{ fontSize: '11px' }}>
+                          {ev.evidence_type}
+                        </span>
+                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                          via {ev.source_type} ({ev.source_reference})
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '11px', color: 'var(--accent-cyan)' }}>
+                        Reliability: {(ev.reliability * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    {ev.notes && (
+                      <div style={{ fontSize: '13px', color: 'var(--text-main)', marginBottom: '8px', fontWeight: 500 }}>
+                        {ev.notes}
+                      </div>
+                    )}
+                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '8px 12px', borderRadius: '6px', fontSize: '11.5px', fontFamily: 'monospace', color: 'var(--text-dim)' }}>
+                      {JSON.stringify(ev.data)}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           ) : opportunities.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
               <Layers size={36} style={{ margin: '0 auto 12px', opacity: 0.4 }} />
@@ -191,7 +286,7 @@ export const ResearchPage: React.FC = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {opportunities.map((opp) => (
+              {opportunities.map((opp: Opportunity) => (
                 <div key={opp.id} className="card" style={{ margin: 0, padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
                     <div>
@@ -199,7 +294,7 @@ export const ResearchPage: React.FC = () => {
                         {opp.title}
                       </div>
                       <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                        {opp.reason}
+                        {opp.why_it_matters || opp.reason}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -218,17 +313,36 @@ export const ResearchPage: React.FC = () => {
                     <div style={{ background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '6px' }}>
                       Search Demand: <strong style={{ color: 'var(--accent-cyan)' }}>{opp.search_volume.toLocaleString()} /mo</strong>
                     </div>
+                    {opp.search_intent && (
+                      <div style={{ background: 'rgba(255,255,255,0.04)', padding: '4px 10px', borderRadius: '6px' }}>
+                        Intent: <strong style={{ color: 'var(--text-main)' }}>{opp.search_intent}</strong>
+                      </div>
+                    )}
                   </div>
 
                   {/* Evidence Items */}
-                  {opp.evidence && opp.evidence.length > 0 && (
+                  {((opp.supporting_evidence && opp.supporting_evidence.length > 0) || (opp.evidence && opp.evidence.length > 0)) && (
                     <div style={{ background: 'rgba(0,0,0,0.25)', padding: '12px 16px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
                       <div style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '6px' }}>
-                        Scoring Evidence & Signals:
+                        Supporting Evidence:
                       </div>
                       <ul style={{ paddingLeft: '18px', fontSize: '12.5px', color: 'var(--text-muted)' }}>
-                        {opp.evidence.map((ev, idx) => (
+                        {(opp.supporting_evidence || opp.evidence || []).map((ev: string, idx: number) => (
                           <li key={idx} style={{ marginBottom: '2px' }}>{ev}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Missing Evidence */}
+                  {opp.missing_evidence && opp.missing_evidence.length > 0 && (
+                    <div style={{ background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.2)', padding: '10px 14px', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#eab308', textTransform: 'uppercase', marginBottom: '4px' }}>
+                        Information Gaps / Missing Evidence:
+                      </div>
+                      <ul style={{ paddingLeft: '18px', fontSize: '12px', color: 'var(--text-dim)' }}>
+                        {opp.missing_evidence.map((gap: string, idx: number) => (
+                          <li key={idx}>{gap}</li>
                         ))}
                       </ul>
                     </div>

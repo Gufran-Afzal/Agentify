@@ -132,7 +132,9 @@ class OpportunityService:
         row = conn.execute(
             """
             SELECT id, research_run_id, title, reason, primary_keyword,
-                   search_volume, confidence, status, created_at, evidence
+                   search_volume, confidence, status, created_at, evidence,
+                   topic, search_intent, why_it_matters, evidence_ids,
+                   supporting_evidence, missing_evidence, confidence_level
             FROM content_opportunities
             WHERE id = ?
             """,
@@ -141,16 +143,19 @@ class OpportunityService:
         if not row:
             return None
         res = dict(row)
-        try:
-            res["evidence"] = json.loads(res["evidence"]) if res.get("evidence") else []
-        except Exception:
-            res["evidence"] = []
+        for key in ("evidence", "evidence_ids", "supporting_evidence", "missing_evidence"):
+            try:
+                res[key] = json.loads(res[key]) if res.get(key) else []
+            except Exception:
+                res[key] = []
         return res
 
     def list_opportunities(self, conn: sqlite3.Connection, status: str | None = None) -> list[dict[str, Any]]:
         query = """
             SELECT id, research_run_id, title, reason, primary_keyword,
-                   search_volume, confidence, status, created_at, evidence
+                   search_volume, confidence, status, created_at, evidence,
+                   topic, search_intent, why_it_matters, evidence_ids,
+                   supporting_evidence, missing_evidence, confidence_level
             FROM content_opportunities
         """
         params: list[Any] = []
@@ -163,10 +168,11 @@ class OpportunityService:
         result = []
         for r in rows:
             d = dict(r)
-            try:
-                d["evidence"] = json.loads(d["evidence"]) if d.get("evidence") else []
-            except Exception:
-                d["evidence"] = []
+            for key in ("evidence", "evidence_ids", "supporting_evidence", "missing_evidence"):
+                try:
+                    d[key] = json.loads(d[key]) if d.get(key) else []
+                except Exception:
+                    d[key] = []
             result.append(d)
         return result
 

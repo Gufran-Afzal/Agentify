@@ -1,6 +1,14 @@
 import sqlite3
 from backend.app.utils.dates import utc_now_iso
 
+# Default demo store — the anchor for all seeded data
+DEFAULT_STORE = {
+    "id": "demo-store",
+    "name": "Demo Skincare Store",
+    "domain": "localhost",
+    "platform": "demo",
+}
+
 DEFAULT_PRODUCTS = [
     {
         "name": "Vitamin C Serum",
@@ -65,9 +73,33 @@ def seed_db(conn: sqlite3.Connection, force_reset: bool = False) -> None:
         conn.execute("DELETE FROM content_briefs")
         conn.execute("DELETE FROM content_opportunities")
         conn.execute("DELETE FROM research_runs")
+        conn.execute("DELETE FROM research_evidence")
+        conn.execute("DELETE FROM research_actions")
         conn.execute("DELETE FROM existing_content")
         conn.execute("DELETE FROM keywords")
         conn.execute("DELETE FROM products")
+        # Do NOT delete stores — they are configuration, not run data
+        conn.commit()
+
+    # Seed demo store (idempotent — safe to run multiple times)
+    existing_store = conn.execute(
+        "SELECT id FROM stores WHERE id = ?", (DEFAULT_STORE["id"],)
+    ).fetchone()
+    if not existing_store:
+        conn.execute(
+            """
+            INSERT INTO stores (id, name, domain, platform, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                DEFAULT_STORE["id"],
+                DEFAULT_STORE["name"],
+                DEFAULT_STORE["domain"],
+                DEFAULT_STORE["platform"],
+                now,
+                now,
+            ),
+        )
         conn.commit()
 
     # Seed products

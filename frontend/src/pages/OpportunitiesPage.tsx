@@ -136,11 +136,11 @@ export const OpportunitiesPage: React.FC<OpportunitiesPageProps> = ({ onNavigate
                   </div>
 
                   <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-main)', marginBottom: '8px' }}>
-                    {opp.title}
+                    {opp.topic || opp.title}
                   </div>
 
                   <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '14px' }}>
-                    {opp.reason}
+                    {opp.why_it_matters || opp.reason}
                   </p>
 
                   <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px', fontSize: '12px' }}>
@@ -150,16 +150,34 @@ export const OpportunitiesPage: React.FC<OpportunitiesPageProps> = ({ onNavigate
                     <span style={{ background: 'rgba(255,255,255,0.05)', padding: '3px 8px', borderRadius: '4px' }}>
                       Demand: <strong style={{ color: 'var(--accent-cyan)' }}>{opp.search_volume.toLocaleString()} searches/mo</strong>
                     </span>
+                    {opp.search_intent && (
+                      <span style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--primary)', padding: '3px 8px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                        Intent: <strong>{opp.search_intent}</strong>
+                      </span>
+                    )}
                   </div>
 
-                  {opp.evidence && opp.evidence.length > 0 && (
-                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '16px' }}>
+                  {((opp.supporting_evidence && opp.supporting_evidence.length > 0) || (opp.evidence && opp.evidence.length > 0)) && (
+                    <div style={{ background: 'rgba(0,0,0,0.25)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '12px' }}>
                       <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        Evidence & Audit Signals:
+                        Supporting Evidence:
                       </div>
                       <ul style={{ paddingLeft: '16px', fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {opp.evidence.map((ev, i) => (
+                        {(opp.supporting_evidence || opp.evidence).map((ev, i) => (
                           <li key={i}>{ev}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {opp.missing_evidence && opp.missing_evidence.length > 0 && (
+                    <div style={{ background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.2)', padding: '8px 12px', borderRadius: 'var(--radius-sm)', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#eab308', textTransform: 'uppercase', marginBottom: '3px' }}>
+                        Information Gaps:
+                      </div>
+                      <ul style={{ paddingLeft: '16px', fontSize: '11.5px', color: 'var(--text-dim)' }}>
+                        {opp.missing_evidence.map((gap, i) => (
+                          <li key={i}>{gap}</li>
                         ))}
                       </ul>
                     </div>

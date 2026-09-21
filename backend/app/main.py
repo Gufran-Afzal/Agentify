@@ -18,6 +18,9 @@ from backend.app.api.briefs import router as briefs_router
 from backend.app.api.drafts import router as drafts_router
 from backend.app.api.publishing import router as publishing_router
 from backend.app.api.dashboard import router as dashboard_router
+from backend.app.api.competitors import router as competitors_router
+from backend.app.api.stores import router as stores_router
+from backend.app.api.shopify import router as shopify_router
 
 # Configure logging
 logging.basicConfig(
@@ -95,6 +98,9 @@ def create_app() -> FastAPI:
     app.include_router(briefs_router)
     app.include_router(drafts_router)
     app.include_router(publishing_router)
+    app.include_router(competitors_router)
+    app.include_router(stores_router)
+    app.include_router(shopify_router)
 
     return app
 

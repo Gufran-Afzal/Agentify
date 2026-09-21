@@ -105,7 +105,15 @@ export const PublishedPage: React.FC<PublishedPageProps> = ({ onOpenPublicArticl
                         {new Date(item.published_at).toLocaleString()}
                       </td>
                       <td>
-                        <StatusBadge status={item.status} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <StatusBadge status={item.status} />
+                          {item.shopify_article_id && (
+                            <span style={{ fontSize: '10.5px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981' }}></span>
+                              Shopify Draft (#{item.shopify_article_id})
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>

@@ -5,10 +5,12 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
 import { DashboardPage } from './pages/DashboardPage';
+import { StoreSettingsPage } from './pages/StoreSettingsPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { KeywordsPage } from './pages/KeywordsPage';
 import { ResearchPage } from './pages/ResearchPage';
 import { OpportunitiesPage } from './pages/OpportunitiesPage';
+import { CompetitorsPage } from './pages/CompetitorsPage';
 import { BriefsPage } from './pages/BriefsPage';
 import { DraftsPage } from './pages/DraftsPage';
 import { PublishedPage } from './pages/PublishedPage';
@@ -81,6 +83,8 @@ export const App: React.FC = () => {
             <DashboardPage stats={stats} onNavigate={handleNavigate} />
           )}
 
+          {currentView === 'stores' && <StoreSettingsPage />}
+
           {currentView === 'products' && <ProductsPage />}
 
           {currentView === 'keywords' && <KeywordsPage />}
@@ -89,6 +93,10 @@ export const App: React.FC = () => {
 
           {currentView === 'opportunities' && (
             <OpportunitiesPage onNavigate={handleNavigate} />
+          )}
+
+          {currentView === 'competitors' && (
+            <CompetitorsPage />
           )}
 
           {currentView === 'briefs' && (

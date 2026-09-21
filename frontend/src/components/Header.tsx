@@ -10,10 +10,12 @@ interface HeaderProps {
 
 const titles: Record<NavView, { title: string; subtitle: string }> = {
   dashboard: { title: 'Operations Dashboard', subtitle: 'Real-time overview of content demand, pipeline stages, and publications' },
+  stores: { title: 'Store & Shopify Settings', subtitle: 'Connect stores, sync product catalogs and collections, and manage Shopify publishing' },
   products: { title: 'Product Catalog', subtitle: 'Active store merchandise analyzed for keyword demand and topic coverage' },
   keywords: { title: 'Search Demand Intelligence', subtitle: 'Target keywords with tracked search volumes and consumer intent' },
   research: { title: 'Research & Opportunity Engine', subtitle: 'Automated research runs analyzing catalogs against search volume signals' },
   opportunities: { title: 'Content Opportunities', subtitle: 'Ranked, evidence-backed article opportunities awaiting human editorial review' },
+  competitors: { title: 'Competitor Intelligence', subtitle: 'Track domain competitors, analyze their ranking content, and uncover content gaps' },
   briefs: { title: 'Content Briefs', subtitle: 'Structured blueprints detailing search intent, target audience, and required sections' },
   drafts: { title: 'Content Drafts & Editor', subtitle: 'Draft production, in-place human editing, and approval pipeline' },
   published: { title: 'Published Articles', subtitle: 'Live customer-facing content with SEO slugs and public article views' },

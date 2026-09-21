@@ -8,7 +8,9 @@ import {
   FileText,
   FileEdit,
   Globe,
-  BookOpen
+  BookOpen,
+  Users,
+  ShoppingBag
 } from 'lucide-react';
 import { NavView, DashboardStats } from '../types';
 
@@ -21,10 +23,12 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, stats }) => {
   const navItems: { id: NavView; label: string; icon: React.ReactNode; count?: number }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { id: 'stores', label: 'Store & Shopify', icon: <ShoppingBag size={18} /> },
     { id: 'products', label: 'Products', icon: <Package size={18} />, count: stats?.total_products },
     { id: 'keywords', label: 'Keywords', icon: <Search size={18} />, count: stats?.total_keywords },
     { id: 'research', label: 'Research', icon: <FlaskConical size={18} />, count: stats?.research_runs },
     { id: 'opportunities', label: 'Opportunities', icon: <Lightbulb size={18} />, count: stats?.pending_opportunities },
+    { id: 'competitors', label: 'Competitors', icon: <Users size={18} /> },
     { id: 'briefs', label: 'Briefs', icon: <FileText size={18} />, count: stats?.content_briefs },
     { id: 'drafts', label: 'Drafts', icon: <FileEdit size={18} />, count: stats?.drafts },
     { id: 'published', label: 'Published Content', icon: <Globe size={18} />, count: stats?.published_content },
